@@ -78,4 +78,21 @@ describe(module.id, function() {
         // TNSInterfaceNeverAvailableDescendant : TNSInterfaceNeverAvailable(API31.7 - skipped) : TNSInterfaceAlwaysAvailable
         expect(Object.getPrototypeOf(TNSInterfaceNeverAvailableDescendant).toString()).toBe(TNSInterfaceAlwaysAvailable.toString(), "TNSInterfaceNeverAvailable base class should be skipped as it is unavailable");
     });
+
+    it("Methods of a protocol which is unavailable should be skipped", function() {
+        expect(new TNSInterfaceAlwaysAvailable().methodFromProtocolNeverAvailable).toBeUndefined("TNSProtocolNeverAvailable methods should be skipped as it is unavailable");
+        expect(TNSInterfaceAlwaysAvailable.staticMethodFromProtocolNeverAvailable).toBeUndefined("TNSProtocolNeverAvailable static methods should be skipped as it is unavailable");
+    });
+
+    it("Methods of a protocol which is available should be present", function() {
+        const obj = new TNSInterfaceAlwaysAvailable();
+        expect(obj.methodFromProtocolAlwaysAvailable).toBeDefined("TNSProtocolAlwaysAvailable methods should be present as it is available");
+        obj.methodFromProtocolAlwaysAvailable();
+        expect(TNSGetOutput()).toBe("methodFromProtocolAlwaysAvailable called");
+       TNSClearOutput();
+       
+        expect(TNSInterfaceAlwaysAvailable.staticMethodFromProtocolAlwaysAvailable).toBeDefined("TNSProtocolAlwaysAvailable static methods should be present as it is available");
+        TNSInterfaceAlwaysAvailable.staticMethodFromProtocolAlwaysAvailable();
+        expect(TNSGetOutput()).toBe("staticMethodFromProtocolAlwaysAvailable called");
+    });
 });

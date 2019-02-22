@@ -865,14 +865,14 @@ struct BaseClassMeta : Meta {
         return this->initializers(initializers);
     }
 
-    std::vector<const MethodMeta*> initializersWithProtcols() const {
+    std::vector<const MethodMeta*> initializersWithProtocols() const {
         std::vector<const MethodMeta*> initializers;
-        return this->initializersWithProtcols(initializers);
+        return this->initializersWithProtocols(initializers);
     }
 
     std::vector<const MethodMeta*> initializers(std::vector<const MethodMeta*>& container) const;
 
-    std::vector<const MethodMeta*> initializersWithProtcols(std::vector<const MethodMeta*>& container) const;
+    std::vector<const MethodMeta*> initializersWithProtocols(std::vector<const MethodMeta*>& container) const;
 };
 
 struct ProtocolMeta : BaseClassMeta {

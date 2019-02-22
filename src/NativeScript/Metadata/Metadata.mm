@@ -198,10 +198,10 @@ const std::vector<const MemberMeta*> BaseClassMeta::members(const char* identifi
         return result;
     }
 
-    // search in protcols
+    // search in protocols
     if (includeProtocols) {
         for (Array<String>::iterator it = protocols->begin(); it != protocols->end(); ++it) {
-            const ProtocolMeta* protocolMeta = static_cast<const ProtocolMeta*>(MetaFile::instance()->globalTable()->findMeta((*it).valuePtr()));
+            const ProtocolMeta* protocolMeta = static_cast<const ProtocolMeta*>(MetaFile::instance()->globalTable()->findMeta((*it).valuePtr(), onlyIfAvailable));
             if (protocolMeta != nullptr) {
                 const std::vector<const MemberMeta*> members = protocolMeta->members(identifier, length, type, onlyIfAvailable);
                 if (members.size() > 0) {
@@ -250,12 +250,12 @@ vector<const MethodMeta*> BaseClassMeta::initializers(vector<const MethodMeta*>&
     return container;
 }
 
-vector<const MethodMeta*> BaseClassMeta::initializersWithProtcols(vector<const MethodMeta*>& container) const {
+vector<const MethodMeta*> BaseClassMeta::initializersWithProtocols(vector<const MethodMeta*>& container) const {
     this->initializers(container);
     for (Array<String>::iterator it = this->protocols->begin(); it != this->protocols->end(); it++) {
         const ProtocolMeta* protocolMeta = static_cast<const ProtocolMeta*>(MetaFile::instance()->globalTable()->findMeta((*it).valuePtr(), false));
         if (protocolMeta != nullptr)
-            protocolMeta->initializersWithProtcols(container);
+            protocolMeta->initializersWithProtocols(container);
     }
     return container;
 }

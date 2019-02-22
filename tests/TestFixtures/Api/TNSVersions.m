@@ -11,6 +11,22 @@
 #undef generateVersionImpl
 
 @implementation TNSInterfaceAlwaysAvailable
+
++ (void)staticMethodFromProtocolAlwaysAvailable {
+    TNSLog([NSString stringWithFormat:@"%@ called", NSStringFromSelector(_cmd)]);
+}
+
++ (void)staticMethodFromProtocolNeverAvailable {
+    TNSLog([NSString stringWithFormat:@"%@ called", NSStringFromSelector(_cmd)]);
+}
+
+- (void)methodFromProtocolAlwaysAvailable {
+    TNSLog([NSString stringWithFormat:@"%@ called", NSStringFromSelector(_cmd)]);
+}
+- (void)methodFromProtocolNeverAvailable {
+    TNSLog([NSString stringWithFormat:@"%@ called", NSStringFromSelector(_cmd)]);
+}
+
 @end
 
 @implementation TNSInterfaceNeverAvailable : TNSInterfaceAlwaysAvailable
