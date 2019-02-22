@@ -20,6 +20,10 @@
 @protocol TNSIBaseProtocol
 
 @optional
++ (void)staticBaseImplementedOptionalMethod;
++ (void)staticBaseNotImplementedOptionalMethod;
++ (void)staticBaseNotImplementedOptionalMethodImplementedInJavaScript;
+
 - (void)baseImplementedOptionalMethod;
 - (void)baseNotImplementedOptionalMethod;
 - (void)baseNotImplementedOptionalMethodImplementedInJavaScript;
@@ -29,6 +33,9 @@
 @end
 
 @interface TNSIBaseInterface (TNSIBaseCategory)
++ (void)staticBaseImplementedCategoryMethod;
++ (void)staticBaseNotImplementedCategoryMethod;
+
 - (void)baseImplementedCategoryMethod;
 - (void)baseNotImplementedCategoryMethod;
 - (void)baseNotImplementedNativeCategoryMethodOverridenInJavaScript;
@@ -37,6 +44,9 @@
 @protocol TNSIDerivedProtocol
 
 @optional
++ (void)staticDerivedImplementedOptionalMethod;
++ (void)staticDerivedNotImplementedOptionalMethod;
+
 - (void)derivedImplementedOptionalMethod;
 - (void)derivedNotImplementedOptionalMethod;
 - (void)derivedNotImplementedOptionalMethodImplementedInJavaScript;
@@ -46,6 +56,9 @@
 @end
 
 @interface TNSIDerivedInterface (TNSIDerivedCategory)
++ (void)staticDerivedImplementedCategoryMethod;
++ (void)staticDerivedNotImplementedCategoryMethod;
+
 - (void)derivedImplementedCategoryMethod;
 - (void)derivedNotImplementedCategoryMethod;
 - (void)derivedNotImplementedNativeCategoryMethodOverridenInJavaScript;

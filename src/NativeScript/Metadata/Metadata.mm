@@ -28,9 +28,7 @@ static UInt8 getSystemVersion() {
     UInt8 majorVersion = (UInt8)[versionTokens[0] intValue];
     UInt8 minorVersion = (UInt8)[versionTokens[1] intValue];
 
-    iosVersion = (majorVersion << 3) | minorVersion;
-
-    return iosVersion;
+    return encodeVersion(majorVersion, minorVersion);
 }
 std::unordered_map<std::string, std::vector<const MemberMeta*>> getMetasByJSNames(std::vector<const MemberMeta*> members) {
     std::unordered_map<std::string, std::vector<const MemberMeta*>> result;
@@ -43,6 +41,42 @@ std::unordered_map<std::string, std::vector<const MemberMeta*>> getMetasByJSName
 static int compareIdentifiers(const char* nullTerminated, const char* notNullTerminated, size_t length) {
     int result = strncmp(nullTerminated, notNullTerminated, length);
     return (result == 0) ? strlen(nullTerminated) - length : result;
+}
+
+const InterfaceMeta* GlobalTable::findInterfaceMeta(WTF::StringImpl* identifier) const {
+    return this->findInterfaceMeta(reinterpret_cast<const char*>(identifier->characters8()), identifier->length(), identifier->hash());
+}
+
+const InterfaceMeta* GlobalTable::findInterfaceMeta(const char* identifierString) const {
+    unsigned hash = WTF::StringHasher::computeHashAndMaskTop8Bits<LChar>(reinterpret_cast<const LChar*>(identifierString));
+    return this->findInterfaceMeta(identifierString, strlen(identifierString), hash);
+}
+
+const InterfaceMeta* GlobalTable::findInterfaceMeta(const char* identifierString, size_t length, unsigned hash) const {
+    const Meta* meta = MetaFile::instance()->globalTable()->findMeta(identifierString, length, hash, /*onlyIfAvailable*/ false);
+    if (meta == nullptr) {
+        return nullptr;
+    }
+
+    assert(meta->type() == MetaType::Interface);
+    if (meta->type() != MetaType::Interface) {
+        return nullptr;
+    }
+
+    const InterfaceMeta* interfaceMeta = static_cast<const InterfaceMeta*>(meta);
+    if (interfaceMeta->isAvailable()) {
+        return interfaceMeta;
+    } else {
+        const char* baseName = static_cast<const InterfaceMeta*>(interfaceMeta)->baseName();
+
+        NSLog(@"** \"%s\" introduced in iOS SDK %d.%d is currently unavailable, attempting to load its base: \"%s\". **",
+              std::string(identifierString, length).c_str(),
+              getMajorVersion(interfaceMeta->introducedIn()),
+              getMinorVersion(interfaceMeta->introducedIn()),
+              baseName);
+
+        return this->findInterfaceMeta(baseName);
+    }
 }
 
 const Meta* GlobalTable::findMeta(WTF::StringImpl* identifier, bool onlyIfAvailable) const {

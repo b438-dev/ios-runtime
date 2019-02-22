@@ -28,6 +28,10 @@
 @end
 
 @implementation TNSIBaseInterface
++ (void)staticBaseImplementedOptionalMethod {
+    TNSLog([NSString stringWithFormat:@"%@ called", NSStringFromSelector(_cmd)]);
+}
+
 - (void)baseImplementedOptionalMethod {
     TNSLog([NSString stringWithFormat:@"%@ called", NSStringFromSelector(_cmd)]);
 }
@@ -36,18 +40,30 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wincomplete-implementation"
 @implementation TNSIBaseInterface (TNSIBaseCategory)
++ (void)staticBaseImplementedCategoryMethod {
+    TNSLog([NSString stringWithFormat:@"%@ called", NSStringFromSelector(_cmd)]);
+}
+
 - (void)baseImplementedCategoryMethod {
     TNSLog([NSString stringWithFormat:@"%@ called", NSStringFromSelector(_cmd)]);
 }
 @end
 
 @implementation TNSIDerivedInterface
++ (void)staticDerivedImplementedOptionalMethod {
+    TNSLog([NSString stringWithFormat:@"%@ called", NSStringFromSelector(_cmd)]);
+}
+
 - (void)derivedImplementedOptionalMethod {
     TNSLog([NSString stringWithFormat:@"%@ called", NSStringFromSelector(_cmd)]);
 }
 @end
 
 @implementation TNSIDerivedInterface (TNSIDerivedCategory)
++ (void)staticDerivedImplementedCategoryMethod {
+    TNSLog([NSString stringWithFormat:@"%@ called", NSStringFromSelector(_cmd)]);
+}
+
 - (void)derivedImplementedCategoryMethod {
     TNSLog([NSString stringWithFormat:@"%@ called", NSStringFromSelector(_cmd)]);
 }

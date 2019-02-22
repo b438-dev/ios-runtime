@@ -184,11 +184,11 @@ describe(module.id, function () {
             'instance methodWith:param: called with 2 params'
         );
     });
-         
+
     it("Explicitly called base class method", function () {
         var object = TNSDerivedInterface.alloc().init();
         TNSBaseInterface.baseMethod.call(object);
-        
+
         var actual = TNSGetOutput();
         expect(actual).toBe('instance baseMethod called');
     });
@@ -1760,7 +1760,7 @@ describe(module.id, function () {
     it('ExposeWithoutImplementation', function () {
         NSObject.extend({}, {
             exposedMethods: {
-                'nonExistingSelector': {returns: interop.types.void, params: [interop.types.selector]}
+                'nonExistingSelector': { returns: interop.types.void, params: [interop.types.selector] }
             }
         });
     });
@@ -1784,7 +1784,7 @@ describe(module.id, function () {
     });
 
     it('OptionalProtocolMethodsAndCategories', function () {
-        var object = TNSIDerivedInterface.extend({
+        const TNSIDerivedInterfaceImpl = TNSIDerivedInterface.extend({
             baseImplementedOptionalMethod: function () {
                 TNSLog('js baseImplementedOptionalMethod called');
                 TNSIDerivedInterface.prototype.baseImplementedOptionalMethod.apply(this, arguments);
@@ -1813,7 +1813,8 @@ describe(module.id, function () {
             derivedNotImplementedNativeCategoryMethodOverridenInJavaScript: function () {
                 TNSLog('js derivedNotImplementedNativeCategoryMethodOverridenInJavaScript called');
             }
-        }).alloc().init();
+        });
+        var object = TNSIDerivedInterfaceImpl.alloc().init();
 
         object.baseImplementedOptionalMethod();
         object.baseNotImplementedOptionalMethodImplementedInJavaScript();
@@ -1848,6 +1849,27 @@ describe(module.id, function () {
         actual = TNSGetOutput();
         expect(actual).toBe(expected);
         TNSClearOutput();
+
+        const checkMethodsAvailability = (obj, prefixes) => {
+            let keys = [];
+            for (key in obj) {
+                keys.push(key);
+            }
+
+            for (i of prefixes) {
+                expect(keys).toContain(`${i}ImplementedOptionalMethod`, "Implemented optional methods should be listed");
+                expect(keys).not.toContain(`${i}NotImplementedOptionalMethod`, "Unimplemented optional methods should be removed from the list");
+                // static methods cannot be defined in JavaScript (yet)
+                if (!i.startsWith('static')) {
+                    expect(keys).toContain(`${i}NotImplementedOptionalMethodImplementedInJavaScript`, "Optional methods implemented in JS should be listed");
+                }
+                expect(keys).toContain(`${i}ImplementedCategoryMethod`, "Category methods are never optional and regardless of their missing implementation they should be listed");
+                expect(keys).toContain(`${i}NotImplementedCategoryMethod`, "Category methods are never optional and regardless of their missing implementation they should be listed");
+            }
+        };
+
+        checkMethodsAvailability(object, ["base", "derived"]);
+        checkMethodsAvailability(TNSIDerivedInterfaceImpl, ["staticBase", "staticDerived"]);
     });
 
     it('AddedNewProperty', function () {
@@ -1872,7 +1894,7 @@ describe(module.id, function () {
         expect(NSString.stringWithCString(encoding).toString()).toBe("v@:");
     });
 
-    it("should project Symbol.iterable as NSFastEnumeration", function() {
+    it("should project Symbol.iterable as NSFastEnumeration", function () {
         var start = 1;
         var end = 10;
         var lastStep = 0;
@@ -1881,16 +1903,16 @@ describe(module.id, function () {
                 return {
                     step: start,
 
-                        next() {
+                    next() {
                         if (this.step <= end) {
-                            return { value : this.step++, done : false };
+                            return { value: this.step++, done: false };
                         } else {
-                            return { done : true };
+                            return { done: true };
                         }
                     }
                     ,
 
-                        return () {
+                    return() {
                         lastStep = this.step;
                         return {};
                     }
@@ -1909,7 +1931,7 @@ describe(module.id, function () {
         TNSClearOutput();
     });
 
-    it("Method and property with the same name", function() {
+    it("Method and property with the same name", function () {
         var JSObject = NSObject.extend({ get conflict() { return true; } },
                                        { protocols : [ TNSPropertyMethodConflictProtocol ] });
 
@@ -1918,8 +1940,8 @@ describe(module.id, function () {
 
         expect(result).toBe(true);
     });
-         
-     it("Should not have base class property slot", function() {
+
+    it("Should not have base class property slot", function () {
         // baseMethod: is declared in the base class (TNSBaseInterface)
         expect(TNSDerivedInterface.prototype.hasOwnProperty('baseMethod')).toBe(false);
     });

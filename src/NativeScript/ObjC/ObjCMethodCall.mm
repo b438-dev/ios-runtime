@@ -146,12 +146,7 @@ void ObjCMethodWrapper::preInvocation(FFICall* callee, ExecState* execState, FFI
         bool isInstance = !class_isMetaClass(object_getClass(target));
         NSLog(@"> %@[%@ %@]", isInstance ? @"-" : @"+", NSStringFromClass(object_getClass(target)), NSStringFromSelector(call->_selector));
 #endif
-        if (call->_isOptional && ![target respondsToSelector:call->_selector]) {
-            // Unimplemented optional method: Silently perform a dummy call to nil object
-            invocation.setArgument(0, nil);
-        } else {
-            invocation.setArgument(0, target);
-        }
+        invocation.setArgument(0, target);
         invocation.setArgument(1, call->_selector);
         invocation.function = call->_msgSend;
     }

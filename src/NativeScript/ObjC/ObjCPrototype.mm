@@ -150,6 +150,7 @@ bool ObjCPrototype::defineOwnProperty(JSObject* object, ExecState* execState, Pr
 
 void ObjCPrototype::getOwnPropertyNames(JSObject* object, ExecState* execState, PropertyNameArray& propertyNames, EnumerationMode enumerationMode) {
     ObjCPrototype* prototype = jsCast<ObjCPrototype*>(object);
+    Class klass = prototype->klass();
 
     std::vector<const BaseClassMeta*> baseClassMetaStack;
     baseClassMetaStack.push_back(prototype->_metadata);
@@ -159,12 +160,12 @@ void ObjCPrototype::getOwnPropertyNames(JSObject* object, ExecState* execState, 
         baseClassMetaStack.pop_back();
 
         for (Metadata::ArrayOfPtrTo<MethodMeta>::iterator it = baseClassMeta->instanceMethods->begin(); it != baseClassMeta->instanceMethods->end(); it++) {
-            if ((*it)->isAvailable())
+            if ((*it)->isAvailableInClass(klass, /*isStatic*/ false))
                 propertyNames.add(Identifier::fromString(execState, (*it)->jsName()));
         }
 
         for (Metadata::ArrayOfPtrTo<PropertyMeta>::iterator it = baseClassMeta->instanceProps->begin(); it != baseClassMeta->instanceProps->end(); it++) {
-            if ((*it)->isAvailable())
+            if ((*it)->isAvailableInClass(prototype->klass(), /*isStatic*/ false))
                 propertyNames.add(Identifier::fromString(execState, (*it)->jsName()));
         }
 

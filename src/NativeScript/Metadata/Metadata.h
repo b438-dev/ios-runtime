@@ -46,6 +46,18 @@ static const V& getProperFunctionFromContainer(const std::vector<V>& container, 
     return *callee;
 }
 
+inline UInt8 encodeVersion(UInt8 majorVersion, UInt8 minorVersion) {
+    return (majorVersion << 3) | minorVersion;
+}
+
+inline UInt8 getMajorVersion(UInt8 encodedVersion) {
+    return encodedVersion >> 3;
+}
+
+inline UInt8 getMinorVersion(UInt8 encodedVersion) {
+    return encodedVersion & 0b111;
+}
+
 // Bit indices in flags section
 enum MetaFlags {
     HasName = 7,
@@ -126,6 +138,7 @@ enum BinaryTypeEncodingType : Byte {
 template <typename T>
 struct PtrTo;
 struct Meta;
+struct InterfaceMeta;
 struct ProtocolMeta;
 struct ModuleMeta;
 struct LibraryMeta;
@@ -272,6 +285,12 @@ struct GlobalTable {
     }
 
     ArrayOfPtrTo<ArrayOfPtrTo<Meta>> buckets;
+
+    const InterfaceMeta* findInterfaceMeta(WTF::StringImpl* identifier) const;
+
+    const InterfaceMeta* findInterfaceMeta(const char* identifierString) const;
+
+    const InterfaceMeta* findInterfaceMeta(const char* identifierString, size_t length, unsigned hash) const;
 
     const Meta* findMeta(WTF::StringImpl* identifier, bool onlyIfAvailable = true) const;
 
@@ -667,6 +686,24 @@ public:
     const char* constructorTokens() const {
         return this->_constructorTokens.valuePtr();
     }
+
+    bool isImplementedInClass(Class klass, bool isStatic) const {
+        // Required methods are treated as implemented
+        if (!this->isOptional()) {
+            return true;
+        }
+
+        // class can be null for Protocol prototypes, treat all members in a protocol as implemented
+        if (klass == nullptr) {
+            return true;
+        }
+
+        return nullptr != (isStatic ? class_getClassMethod(klass, this->selector()) : class_getInstanceMethod(klass, this->selector()));
+    }
+
+    bool isAvailableInClass(Class klass, bool isStatic) const {
+        return this->isAvailable() && this->isImplementedInClass(klass, isStatic);
+    }
 };
 
 std::unordered_map<std::string, std::vector<const MemberMeta*>> getMetasByJSNames(std::vector<const MemberMeta*> methods);
@@ -690,6 +727,16 @@ public:
 
     const MethodMeta* setter() const {
         return (this->hasSetter()) ? (this->hasGetter() ? method2.valuePtr() : method1.valuePtr()) : nullptr;
+    }
+
+    bool isImplementedInClass(Class klass, bool isStatic) const {
+        bool getterAvailable = this->hasGetter() && this->getter()->isImplementedInClass(klass, isStatic);
+        bool setterAvailable = this->hasSetter() && this->setter()->isImplementedInClass(klass, isStatic);
+        return !this->isOptional() || getterAvailable || setterAvailable;
+    }
+
+    bool isAvailableInClass(Class klass, bool isStatic) const {
+        return this->isAvailable() && this->isImplementedInClass(klass, isStatic);
     }
 };
 
@@ -843,9 +890,10 @@ public:
 
     const InterfaceMeta* baseMeta() const {
         if (this->baseName() != nullptr) {
-            const Meta* baseMeta = MetaFile::instance()->globalTable()->findMeta(this->baseName());
-            return baseMeta->type() == MetaType::Interface ? reinterpret_cast<const InterfaceMeta*>(baseMeta) : nullptr;
+            const InterfaceMeta* baseMeta = MetaFile::instance()->globalTable()->findInterfaceMeta(this->baseName());
+            return baseMeta;
         }
+
         return nullptr;
     }
 };
